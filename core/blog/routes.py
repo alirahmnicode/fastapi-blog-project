@@ -1,23 +1,20 @@
 from typing import List
-from fastapi import FastAPI, Depends, HTTPException, status, Response
+from fastapi import FastAPI, Depends, HTTPException, status, Response, APIRouter
 from sqlalchemy.orm import Session
-from schemas import BlogCreateSchema, BlogResponseSchema, BlogUpdateSchema
-from database import Base, engine, get_db
-from models import Blog, Tag
+from .schemas import BlogCreateSchema, BlogResponseSchema, BlogUpdateSchema
+from core.database import get_db
+from .models import Blog, Tag
 
 
-Base.metadata.create_all(bind=engine)
+router = APIRouter(prefix="/blog", tags=["blog"])
 
-app = FastAPI()
-
-
-@app.get("/blog", response_model=List[BlogResponseSchema])
+@router.get("/blog", response_model=List[BlogResponseSchema])
 async def blog_list(db: Session = Depends(get_db)):
     blog_list = db.query(Blog).all()
     return blog_list
 
 
-@app.get("/blog/{blog_id}", response_model=BlogResponseSchema)
+@router.get("/blog/{blog_id}", response_model=BlogResponseSchema)
 async def blog_detail(blog_id: int, db: Session = Depends(get_db)):
     blog_obj = db.query(Blog).filter_by(id=blog_id).one_or_none()
     if not blog_obj:
@@ -25,7 +22,7 @@ async def blog_detail(blog_id: int, db: Session = Depends(get_db)):
     return blog_obj
 
 
-@app.post("/blog", response_model=BlogResponseSchema)
+@router.post("/blog", response_model=BlogResponseSchema)
 async def blog_create(request: BlogCreateSchema, db: Session = Depends(get_db)):
     data = request.model_dump()
     tags = data.pop("tags")
@@ -35,7 +32,7 @@ async def blog_create(request: BlogCreateSchema, db: Session = Depends(get_db)):
 
     # add tags to the obj
     for tag in tags:
-        blog_obj.tags.append(Tag(tag_name=tag, blog_id=blog_obj.id))
+        blog_obj.tags.routerend(Tag(tag_name=tag, blog_id=blog_obj.id))
 
     db.add(blog_obj)
     db.commit()
@@ -43,7 +40,7 @@ async def blog_create(request: BlogCreateSchema, db: Session = Depends(get_db)):
     return blog_obj
 
 
-@app.put("/blog/{blog_id}", response_model=BlogResponseSchema)
+@router.put("/blog/{blog_id}", response_model=BlogResponseSchema)
 async def blog_update(blog_id: int, request: BlogCreateSchema, db: Session = Depends(get_db)):
     blog_obj = db.get(Blog, blog_id)
     if not blog_obj:
@@ -56,7 +53,7 @@ async def blog_update(blog_id: int, request: BlogCreateSchema, db: Session = Dep
     return blog_obj
 
 
-@app.delete("/blog/{blog_id}")
+@router.delete("/blog/{blog_id}")
 async def blog_delete(blog_id: int, db: Session = Depends(get_db)):
     blog_obj = db.get(Blog, blog_id)
     if not blog_obj:
