@@ -5,7 +5,6 @@ from core.database import Base, engine
 from core.blog.routes import router as blog_router
 from core.user.router import router as user_router
 
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
