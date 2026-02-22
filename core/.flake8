@@ -1,0 +1,3 @@
+[flake8]
+extended_ignore = E203, E231, E501
+exclude = __pycache__, .git, alembic

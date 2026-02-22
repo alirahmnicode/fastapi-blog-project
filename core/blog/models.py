@@ -21,6 +21,8 @@ class Blog(Base):
         nullable=False
     )
 
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user = relationship("User", back_populates="blogs")
     tags = relationship("Tag", back_populates="blog", cascade="all, delete-orphan")
 
 

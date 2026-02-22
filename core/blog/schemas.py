@@ -18,9 +18,21 @@ class BlogBaseSchema(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 class BlogResponseSchema(BlogBaseSchema):
     id: int
+    user_id: int = Field(..., description="id of the user.")
     tags: List[TagResponseSchema]
+  
+
+class BlogListResponseSchema(BaseModel):
+    total: int
+    page: int
+    page_size: int
+    next: str | None = None
+    previous: str | None = None
+    data: List[BlogResponseSchema]
+  
 
 class BlogCreateSchema(BlogBaseSchema):
     tags: List[str] = []
