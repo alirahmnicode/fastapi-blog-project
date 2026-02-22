@@ -15,14 +15,13 @@ session = SessionLocal()
 
 fake = Faker()
 
+
 def seed_data():
     # Ensure at least one user exists
     user = session.query(User).first()
     if not user:
         user = User(
-            username=fake.user_name(),
-            email=fake.email(),
-            password="hashedpassword"
+            username=fake.user_name(), email=fake.email(), password="hashedpassword"
         )
         session.add(user)
         session.commit()
@@ -32,7 +31,7 @@ def seed_data():
         blog = Blog(
             title=fake.sentence(nb_words=6),
             description=fake.text(max_nb_chars=200),
-            user_id=user.id
+            user_id=user.id,
         )
 
         # Add 1–5 random tags per blog
@@ -44,6 +43,7 @@ def seed_data():
 
     session.commit()
     print("✅ Successfully inserted 10 fake blogs with tags!")
+
 
 if __name__ == "__main__":
     seed_data()

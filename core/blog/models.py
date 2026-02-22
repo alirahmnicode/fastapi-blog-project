@@ -10,18 +10,18 @@ class Blog(Base):
     title = Column(String, index=True)
     description = Column(String)
     created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        nullable=False
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),
-        nullable=False
+        nullable=False,
     )
 
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
     user = relationship("User", back_populates="blogs")
     tags = relationship("Tag", back_populates="blog", cascade="all, delete-orphan")
 
@@ -31,6 +31,8 @@ class Tag(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     tag_name = Column(String, index=True)
-    blog_id = Column(Integer, ForeignKey("blogs.id", ondelete="CASCADE"), nullable=False)
+    blog_id = Column(
+        Integer, ForeignKey("blogs.id", ondelete="CASCADE"), nullable=False
+    )
 
     blog = relationship("Blog", back_populates="tags")

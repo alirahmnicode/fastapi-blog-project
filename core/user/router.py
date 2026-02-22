@@ -11,18 +11,22 @@ from .auth import (
     decode_refresh_token,
 )
 
-
 router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post("/register")
 async def register_user(request: UserCreateSchema, db: Session = Depends(get_db)):
-    user_exists = db.query(User).filter(
-        (User.username == request.username) | (User.email == request.email)
-    ).first()
+    user_exists = (
+        db.query(User)
+        .filter((User.username == request.username) | (User.email == request.email))
+        .first()
+    )
 
     if user_exists:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username or email already exists!")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username or email already exists!",
+        )
 
     user = User(username=request.username, email=request.email)
     user.set_password(request.password)
@@ -33,11 +37,7 @@ async def register_user(request: UserCreateSchema, db: Session = Depends(get_db)
 
 @router.post("/login")
 async def login_user(request: UserLoginSchema, db: Session = Depends(get_db)):
-    user_obj = (
-        db.query(User)
-        .filter_by(username=request.username.lower())
-        .first()
-    )
+    user_obj = db.query(User).filter_by(username=request.username.lower()).first()
 
     if not user_obj:
         raise HTTPException(

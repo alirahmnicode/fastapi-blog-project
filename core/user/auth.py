@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta,timezone
+from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
@@ -9,12 +9,12 @@ from core.database import get_db
 from core.config import settings
 from .models import User
 
-
 security = HTTPBearer()
+
 
 def get_authenticated_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     # Check if credentials are not provided
     if not credentials or not credentials.credentials:
@@ -25,9 +25,7 @@ def get_authenticated_user(
 
     token = credentials.credentials
     try:
-        decoded = jwt.decode(
-            token, settings.JWT_SECRET_KEY, algorithms="HS256"
-        )
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms="HS256")
         user_id = decoded.get("user_id", None)
         if not user_id:
             raise HTTPException(
@@ -72,7 +70,7 @@ def generate_access_token(user_id: int, expires_in: int = 5) -> str:
         "user_id": user_id,
         "type": "access",
         "iat": now,
-        "exp": now + timedelta(minutes=expires_in)
+        "exp": now + timedelta(minutes=expires_in),
     }
     token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
     return token
@@ -91,9 +89,7 @@ def generate_refresh_token(user_id: int, expires_in: int = 60 * 24) -> str:
 
 def decode_refresh_token(token):
     try:
-        decoded = jwt.decode(
-            token, settings.JWT_SECRET_KEY, algorithms="HS256"
-        )
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms="HS256")
         user_id = decoded.get("user_id", None)
         if not user_id:
             raise HTTPException(
@@ -113,7 +109,6 @@ def decode_refresh_token(token):
             )
 
         return user_id
-
 
     except Exception as e:
         raise HTTPException(

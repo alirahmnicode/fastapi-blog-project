@@ -18,5 +18,5 @@ def pagination(request, total, page, page_size):
         "page": page,
         "page_size": page_size,
         "next": next_url,
-        "previous": previous_url
+        "previous": previous_url,
     }

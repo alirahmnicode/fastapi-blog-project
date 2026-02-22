@@ -4,7 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from core.database import Base
 from passlib.context import CryptContext
 
-
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
@@ -30,5 +29,3 @@ class User(Base):
     def set_password(self, plain_password: str):
         "Set the user's password by hashing it before storing."
         self.password = self.hash_password(plain_password)
-
-    
