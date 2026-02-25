@@ -7,7 +7,8 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
-class User(Base):
+class UserModel(Base):
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -15,7 +16,8 @@ class User(Base):
     email = Column(String(120), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
 
-    blogs = relationship("Blog", back_populates="user", cascade="all, delete-orphan")
+    blogs = relationship("BlogModel", back_populates="user",
+                         cascade="all, delete-orphan")
 
     def hash_password(self, plain_password: str):
         "Hash the password using a secure hashing algorithm (bcrypt)."

@@ -1,14 +1,20 @@
-from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
+from slugify import slugify
 from core.database import Base
 
 
-class Blog(Base):
+class BlogModel(Base):
     __tablename__ = "blogs"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
-    description = Column(String)
+    slug = Column(String, unique=True, index=True)
+    content = Column(String)
+    excerpt = Column(String)
+    image_url = Column(String)
+    is_published = Column(Boolean, default=False)
+    published_at = Column(DateTime(timezone=True))
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -22,11 +28,22 @@ class Blog(Base):
     user_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-    user = relationship("User", back_populates="blogs")
-    tags = relationship("Tag", back_populates="blog", cascade="all, delete-orphan")
+    user = relationship("UserModel", back_populates="blogs")
+
+    tags = relationship("TagModel", back_populates="blog",
+                        cascade="all, delete-orphan")
+
+    def set_slug(self):
+        self.slug = slugify(self.title) + f"-{self.id}"
+
+    def set_published_date(self):
+        if self.is_published and not self.published_at:
+            self.published_at = func.now()
+        else:
+            self.published_at = None
 
 
-class Tag(Base):
+class TagModel(Base):
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -35,4 +52,4 @@ class Tag(Base):
         Integer, ForeignKey("blogs.id", ondelete="CASCADE"), nullable=False
     )
 
-    blog = relationship("Blog", back_populates="tags")
+    blog = relationship("BlogModel", back_populates="tags")

@@ -7,9 +7,9 @@ from jwt.exceptions import InvalidSignatureError, DecodeError
 
 from core.database import get_db
 from core.config import settings
-from .models import User
+from .models import UserModel
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 def get_authenticated_user(
@@ -25,7 +25,8 @@ def get_authenticated_user(
 
     token = credentials.credentials
     try:
-        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms="HS256")
+        decoded = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms="HS256")
         user_id = decoded.get("user_id", None)
         if not user_id:
             raise HTTPException(
@@ -44,7 +45,7 @@ def get_authenticated_user(
                 detail="Authentication failed, token expired",
             )
 
-        user_obj = db.query(User).filter_by(id=user_id).one()
+        user_obj = db.query(UserModel).filter_by(id=user_id).one()
         return user_obj
 
     except InvalidSignatureError:
@@ -89,7 +90,8 @@ def generate_refresh_token(user_id: int, expires_in: int = 60 * 24) -> str:
 
 def decode_refresh_token(token):
     try:
-        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms="HS256")
+        decoded = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms="HS256")
         user_id = decoded.get("user_id", None)
         if not user_id:
             raise HTTPException(

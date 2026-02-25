@@ -4,21 +4,21 @@ from core.database import get_db
 from sqlalchemy.orm import Session
 
 from .schemas import UserCreateSchema, UserLoginSchema, UserResponseSchema
-from .models import User
+from .models import UserModel
 from .auth import (
     generate_access_token,
     generate_refresh_token,
     decode_refresh_token,
 )
 
-router = APIRouter(prefix="/user", tags=["user"])
+router = APIRouter(prefix="/users", tags=["user"])
 
 
 @router.post("/register")
 async def register_user(request: UserCreateSchema, db: Session = Depends(get_db)):
     user_exists = (
-        db.query(User)
-        .filter((User.username == request.username) | (User.email == request.email))
+        db.query(UserModel)
+        .filter((UserModel.username == request.username) | (UserModel.email == request.email))
         .first()
     )
 
@@ -28,16 +28,19 @@ async def register_user(request: UserCreateSchema, db: Session = Depends(get_db)
             detail="Username or email already exists!",
         )
 
-    user = User(username=request.username, email=request.email)
+    user = UserModel(username=request.username, email=request.email)
     user.set_password(request.password)
     db.add(user)
     db.commit()
-    return {"message": "User registered successfully", "user": user}
+    access_token = generate_access_token(user.id)
+    refresh_token = generate_refresh_token(user.id)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"access_token": access_token, "refresh_token": refresh_token})
 
 
 @router.post("/login")
 async def login_user(request: UserLoginSchema, db: Session = Depends(get_db)):
-    user_obj = db.query(User).filter_by(username=request.username.lower()).first()
+    user_obj = db.query(UserModel).filter_by(
+        username=request.username.lower()).first()
 
     if not user_obj:
         raise HTTPException(
