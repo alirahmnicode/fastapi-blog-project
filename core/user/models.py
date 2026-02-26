@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 from core.database import Base
 from passlib.context import CryptContext
@@ -16,8 +16,12 @@ class UserModel(Base):
     email = Column(String(120), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
 
-    blogs = relationship("BlogModel", back_populates="user",
-                         cascade="all, delete-orphan")
+    blogs = relationship(
+        "BlogModel", back_populates="user", cascade="all, delete-orphan"
+    )
+    liked_blogs: Mapped[list["BlogModel"]] = relationship(
+        secondary="blog_likes", back_populates="liked_by_users"
+    )
 
     def hash_password(self, plain_password: str):
         "Hash the password using a secure hashing algorithm (bcrypt)."

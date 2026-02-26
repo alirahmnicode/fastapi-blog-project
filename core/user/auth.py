@@ -25,8 +25,7 @@ def get_authenticated_user(
 
     token = credentials.credentials
     try:
-        decoded = jwt.decode(
-            token, settings.JWT_SECRET_KEY, algorithms="HS256")
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms="HS256")
         user_id = decoded.get("user_id", None)
         if not user_id:
             raise HTTPException(
@@ -65,33 +64,31 @@ def get_authenticated_user(
         )
 
 
-def generate_access_token(user_id: int, expires_in: int = 5) -> str:
+def generate_access_token(user_id: int, expires_in: int = 60 * 5) -> str:
     now = datetime.now(timezone.utc)
     payload = {
-        "user_id": user_id,
         "type": "access",
+        "user_id": user_id,
         "iat": now,
-        "exp": now + timedelta(minutes=expires_in),
+        "exp": now + timedelta(seconds=expires_in),
     }
-    token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
-    return token
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
 
 
-def generate_refresh_token(user_id: int, expires_in: int = 60 * 24) -> str:
+def generate_refresh_token(user_id: int, expires_in: int = 3600 * 24) -> str:
     now = datetime.now(timezone.utc)
     payload = {
         "type": "refresh",
         "user_id": user_id,
         "iat": now,
-        "exp": now + timedelta(minutes=expires_in),
+        "exp": now + timedelta(seconds=expires_in),
     }
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
 
 
 def decode_refresh_token(token):
     try:
-        decoded = jwt.decode(
-            token, settings.JWT_SECRET_KEY, algorithms="HS256")
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms="HS256")
         user_id = decoded.get("user_id", None)
         if not user_id:
             raise HTTPException(

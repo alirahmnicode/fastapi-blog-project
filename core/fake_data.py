@@ -37,9 +37,7 @@ def seed_blogs(db, user, count=10):
         slug = slugify(title) + f"-{random.randint(1000, 9999)}"
 
         is_published = random.choice([True, False])
-        published_at = (
-            datetime.now(timezone.utc) if is_published else None
-        )
+        published_at = datetime.now(timezone.utc) if is_published else None
 
         blog = BlogModel(
             title=title,

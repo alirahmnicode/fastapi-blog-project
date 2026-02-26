@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from core.database import get_db
@@ -9,7 +10,9 @@ from .auth import (
     generate_access_token,
     generate_refresh_token,
     decode_refresh_token,
+    get_authenticated_user,
 )
+from blog.schemas import BlogResponseSchema
 
 router = APIRouter(prefix="/users", tags=["user"])
 
@@ -18,7 +21,10 @@ router = APIRouter(prefix="/users", tags=["user"])
 async def register_user(request: UserCreateSchema, db: Session = Depends(get_db)):
     user_exists = (
         db.query(UserModel)
-        .filter((UserModel.username == request.username) | (UserModel.email == request.email))
+        .filter(
+            (UserModel.username == request.username)
+            | (UserModel.email == request.email)
+        )
         .first()
     )
 
@@ -34,13 +40,15 @@ async def register_user(request: UserCreateSchema, db: Session = Depends(get_db)
     db.commit()
     access_token = generate_access_token(user.id)
     refresh_token = generate_refresh_token(user.id)
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"access_token": access_token, "refresh_token": refresh_token})
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"access_token": access_token, "refresh_token": refresh_token},
+    )
 
 
 @router.post("/login")
 async def login_user(request: UserLoginSchema, db: Session = Depends(get_db)):
-    user_obj = db.query(UserModel).filter_by(
-        username=request.username.lower()).first()
+    user_obj = db.query(UserModel).filter_by(username=request.username.lower()).first()
 
     if not user_obj:
         raise HTTPException(
@@ -61,3 +69,11 @@ async def login_user(request: UserLoginSchema, db: Session = Depends(get_db)):
             "refresh_token": refresh_token,
         }
     )
+
+
+@router.get("/likes", response_model=List[BlogResponseSchema])
+async def get_user_liked_blogs(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_authenticated_user),
+):
+    return current_user.liked_blogs

@@ -56,7 +56,8 @@ async def blog_list(
     description="Get blogs of the authenticated user.",
 )
 async def user_blog_list(
-    db: Session = Depends(get_db), current_user: UserModel = Depends(get_authenticated_user)
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_authenticated_user),
 ):
     blog_list = db.query(BlogModel).filter_by(user_id=current_user.id)
     return blog_list
@@ -69,8 +70,7 @@ async def blog_detail(
     current_user=Depends(get_authenticated_user),
 ):
     blog_obj = (
-        db.query(BlogModel).filter_by(
-            id=blog_id, user_id=current_user.id).one_or_none()
+        db.query(BlogModel).filter_by(id=blog_id, user_id=current_user.id).one_or_none()
     )
     if not blog_obj:
         raise HTTPException(
@@ -101,7 +101,9 @@ async def blog_create(
     db.add(blog_obj)
     db.commit()
     db.refresh(blog_obj)
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(blog_obj))
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED, content=jsonable_encoder(blog_obj)
+    )
 
 
 @router.put("/{blog_id}", response_model=BlogResponseSchema)
@@ -112,8 +114,7 @@ async def blog_update(
     current_user=Depends(get_authenticated_user),
 ):
     blog_obj = (
-        db.query(BlogModel).filter_by(
-            id=blog_id, user_id=current_user.id).one_or_none()
+        db.query(BlogModel).filter_by(id=blog_id, user_id=current_user.id).one_or_none()
     )
     if not blog_obj:
         raise HTTPException(
@@ -134,8 +135,7 @@ async def blog_delete(
     current_user=Depends(get_authenticated_user),
 ):
     blog_obj = (
-        db.query(BlogModel).filter_by(
-            id=blog_id, user_id=current_user.id).one_or_none()
+        db.query(BlogModel).filter_by(id=blog_id, user_id=current_user.id).one_or_none()
     )
     if not blog_obj:
         raise HTTPException(
@@ -143,5 +143,49 @@ async def blog_delete(
         )
 
     db.delete(blog_obj)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{blog_id}/like")
+async def like_blog(
+    blog_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_authenticated_user),
+):
+    blog_obj = db.query(BlogModel).filter_by(id=blog_id).one_or_none()
+    if not blog_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Blog not found."
+        )
+
+    if blog_obj in current_user.liked_blogs:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Blog already liked."
+        )
+
+    current_user.liked_blogs.append(blog_obj)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{blog_id}/unlike")
+async def unlike_blog(
+    blog_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_authenticated_user),
+):
+    blog_obj = db.query(BlogModel).filter_by(id=blog_id).one_or_none()
+    if not blog_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Blog not found."
+        )
+
+    if blog_obj not in current_user.liked_blogs:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Blog not liked yet."
+        )
+
+    current_user.liked_blogs.remove(blog_obj)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

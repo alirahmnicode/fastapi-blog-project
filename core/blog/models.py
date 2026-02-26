@@ -1,7 +1,27 @@
-from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    func,
+    ForeignKey,
+    Boolean,
+    Table,
+)
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from slugify import slugify
 from core.database import Base
+
+blog_likes = Table(
+    "blog_likes",
+    Base.metadata,
+    Column(
+        "user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    ),
+    Column(
+        "blog_id", Integer, ForeignKey("blogs.id", ondelete="CASCADE"), primary_key=True
+    ),
+)
 
 
 class BlogModel(Base):
@@ -30,8 +50,10 @@ class BlogModel(Base):
     )
     user = relationship("UserModel", back_populates="blogs")
 
-    tags = relationship("TagModel", back_populates="blog",
-                        cascade="all, delete-orphan")
+    tags = relationship("TagModel", back_populates="blog", cascade="all, delete-orphan")
+    liked_by_users: Mapped[list["UserModel"]] = relationship(
+        secondary=blog_likes, back_populates="liked_blogs"
+    )
 
     def set_slug(self):
         self.slug = slugify(self.title) + f"-{self.id}"

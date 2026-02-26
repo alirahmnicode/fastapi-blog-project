@@ -1,5 +1,6 @@
 # retrieve tests
 
+
 def test_blogs_list_api_response_200(anon_client):
     response = anon_client.get("/blogs/all")
     assert response.status_code == 200
@@ -22,6 +23,7 @@ def test_blog_detail_api_response_200(auth_client, random_blog):
 
 # create tests
 
+
 def test_blog_create_api_response_201(auth_client, fake_blog_data):
     print(fake_blog_data)
     response = auth_client.post("/blogs", json=fake_blog_data)
@@ -29,8 +31,7 @@ def test_blog_create_api_response_201(auth_client, fake_blog_data):
 
 
 def test_blog_create_invalid_data_response_422(auth_client):
-    res = auth_client.post(
-        "/blogs", json={"title": 123, "body": None})
+    res = auth_client.post("/blogs", json={"title": 123, "body": None})
     assert res.status_code == 422
 
 
@@ -40,6 +41,7 @@ def test_blog_create_unauthorized_response_401(anon_client, fake_blog_data):
 
 
 # update tests
+
 
 def test_blog_update_api_response_200(auth_client, random_blog):
     data = {
@@ -65,8 +67,7 @@ def test_update_blog_not_found_response_404(auth_client, fake_blog_data):
 
 
 def test_update_blog_invalid_data_response_422(auth_client):
-    res = auth_client.put(
-        "/blogs/1", json={"title": 123, "body": None})
+    res = auth_client.put("/blogs/1", json={"title": 123, "body": None})
     assert res.status_code == 422
 
 
@@ -76,6 +77,7 @@ def test_update_blog_unauthorized_response_401(anon_client, fake_blog_data):
 
 
 # delete tests
+
 
 def test_delete_blog_response(auth_client, random_blog):
     response = auth_client.delete(f"/blogs/{random_blog.id}")

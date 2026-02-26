@@ -1,6 +1,10 @@
 def test_register_response_201(anon_client):
-    payload = {"username": "newuser",
-               "email": "new@gmail.com", "password": "12345678", "password_confirm": "12345678"}
+    payload = {
+        "username": "newuser",
+        "email": "new@gmail.com",
+        "password": "12345678",
+        "password_confirm": "12345678",
+    }
     response = anon_client.post("/users/register", json=payload)
     response_data = response.json()
     print(response_data)
@@ -10,10 +14,7 @@ def test_register_response_201(anon_client):
 
 
 def test_login_response_200(anon_client):
-    payload = {
-        "username": "testuser",
-        "password": "12345678"
-    }
+    payload = {"username": "testuser", "password": "12345678"}
     response = anon_client.post("/users/login", json=payload)
     print(response)
     assert response.status_code == 200
@@ -23,8 +24,7 @@ def test_login_response_200(anon_client):
 
 def test_login_invalid_data_response_401(anon_client):
     payload = {"username": "testuser", "password": "wrongpassword"}
-    response = anon_client.post(
-        "/users/login", json=payload)
+    response = anon_client.post("/users/login", json=payload)
     assert response.status_code == 401
 
     payload = {"username": "nonexistentuser", "password": "12345678"}

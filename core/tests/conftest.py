@@ -11,14 +11,13 @@ from blog.models import BlogModel, TagModel
 from faker import Faker
 from slugify import slugify
 
-
 fake = Faker()
 
 DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False},
-    poolclass=StaticPool)
+    DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+)
 
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -74,9 +73,7 @@ def generate_mock_data(db_session):
         slug = slugify(title) + f"-{random.randint(1000, 9999)}"
 
         is_published = random.choice([True, False])
-        published_at = (
-            datetime.now(timezone.utc) if is_published else None
-        )
+        published_at = datetime.now(timezone.utc) if is_published else None
 
         blog = BlogModel(
             title=title,
